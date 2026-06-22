@@ -1,0 +1,1025 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GENIUS TOKYO お客様アンケート</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script>
+  // ====================================================
+  //  CONFIG — 店舗ごとにここだけ書き換えてください
+  // ====================================================
+  const CONFIG = {
+    shopName:       "GENIUS TOKYO",
+    shopCategory:   "ナイトクラブ・イベントスペース",
+    logoUrl:        "",
+    headerImageUrl: "",
+    themeColor:     "#111827",
+    accentColor:    "#C9A646",
+    // Googleビジネスプロフィールの「口コミ投稿URL」または Place ID を設定してください
+    // 例）googleReviewUrl: "https://g.page/r/xxxxxxxx/review"
+    googlePlaceId:  "",
+    googleReviewUrl:"",
+    // GAS連携用：Google Apps ScriptをウェブアプリとしてデプロイしたURLを入れてください
+    // 例）gasWebAppUrl: "https://script.google.com/macros/s/xxxxxxxx/exec"
+    gasWebAppUrl:"",
+    // GitHub Pages + GAS版です。
+    // 回答データはGAS経由でGoogleスプレッドシートに保存します。
+    thankYouMessage:"ご回答ありがとうございました！",
+    copyButtonText: "口コミ用メッセージをコピーする",
+    questions: [
+      { id:"overall",  type:"stars",    label:"本日のGENIUS TOKYOでのご体験は、総合的にいかがでしたか？", required:true },
+      { id:"music",    type:"stars",    label:"音楽・DJ・選曲はいかがでしたか？", required:true },
+      { id:"atmosphere", type:"stars",  label:"店内の雰囲気・盛り上がりはいかがでしたか？", required:true },
+      { id:"staff",    type:"stars",    label:"スタッフの接客・ご案内はいかがでしたか？", required:true },
+      { id:"drink",    type:"stars",    label:"ドリンク・バーのご利用はいかがでしたか？", required:false },
+      { id:"revisit",  type:"radio",    label:"またGENIUS TOKYOに来たいと思いますか？", required:true,
+        options:["ぜひまた来たい","友人にも紹介したい","機会があれば来たい","今のところ未定"] },
+      { id:"purpose",  type:"radio",    label:"本日はどのような目的でご来店されましたか？", required:false,
+        options:["友人・知人との来店","イベント参加","貸切・パーティー利用","VIP利用","初めての来店","その他"] },
+      { id:"source",   type:"radio",    label:"GENIUS TOKYOをどこでお知りになりましたか？", required:false,
+        options:["Google検索 / Googleマップ","Instagram / SNS","知人・友人の紹介","イベント情報サイト","通りがかり","以前から知っていた","その他"] },
+      { id:"message",  type:"textarea", label:"よろしければ、本日のご感想をお聞かせください 💬",
+        placeholder:"例）音楽と照明の雰囲気がとても良く、友人とも楽しい時間を過ごせました。また来たいです！",
+        required:false, isCopyTarget:true },
+    ],
+  };
+  </script>
+  <style>
+    /* ===== CSS Variables ===== */
+    :root {
+      --theme:   #2D6A4F;
+      --accent:  #52B788;
+      --light:   #D8F3DC;
+      --bg:      #F8FAF8;
+      --surface: #FFFFFF;
+      --text:    #1B2E22;
+      --muted:   #6B8F76;
+      --border:  #C8E0CF;
+      --radius:  16px;
+      --shadow:  0 4px 24px rgba(45,106,79,.10);
+    }
+
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(201,166,70,.18), transparent 34%),
+        radial-gradient(circle at 85% 10%, rgba(255,255,255,.08), transparent 30%);
+      z-index: -1;
+    }
+    .header {
+      background:
+        linear-gradient(135deg, #050505 0%, #111827 48%, #2B2112 100%);
+    }
+    .card {
+      border-color: rgba(201,166,70,.34);
+    }
+    .q-label .req {
+      background: linear-gradient(135deg, #111827, #3B2F16);
+    }
+    .submit-btn {
+      background: linear-gradient(135deg, #111827, #3B2F16);
+    }
+
+    /* ===== Reset ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* ===== Header ===== */
+    .header {
+      background: var(--theme);
+      color: #fff;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(82,183,136,.35) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 50%, rgba(82,183,136,.20) 0%, transparent 60%);
+    }
+    /* ヘッダー画像エリア */
+    .header-hero {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      display: block;
+      position: relative;
+      z-index: 0;
+    }
+    .header-hero-wrap {
+      position: relative;
+      overflow: hidden;
+      max-height: 200px;
+      display: none; /* 画像URLがある場合のみ表示 */
+    }
+    .header-hero-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(transparent, var(--theme));
+    }
+    .header-inner {
+      position: relative;
+      z-index: 1;
+      padding: 24px 24px 20px;
+    }
+    .logo-text {
+      font-family: 'Noto Serif JP', serif;
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 700;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+    }
+    .logo-img {
+      max-height: 64px;
+      max-width: 200px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+      object-fit: contain;
+    }
+    .svg-logo {
+      width: 220px;
+      height: 60px;
+      display: block;
+      margin: 0 auto 8px;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,.20));
+    }
+    .header-sub {
+      font-size: 13px;
+      opacity: .85;
+      letter-spacing: .05em;
+    }
+
+    /* ===== Progress Bar ===== */
+    .progress-wrap {
+      background: rgba(255,255,255,.2);
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #fff;
+      border-radius: 2px;
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    /* ===== Container ===== */
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* ===== Question Card ===== */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      opacity: 0;
+      transform: translateY(18px);
+      animation: slideUp .45s ease forwards;
+    }
+    @keyframes slideUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .q-label {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    .q-label .req {
+      display: inline-block;
+      background: var(--theme);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+      letter-spacing: .04em;
+    }
+    .q-label .opt {
+      display: inline-block;
+      background: var(--border);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* ===== Stars ===== */
+    .stars {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      padding: 8px 0;
+    }
+    .star-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 40px;
+      color: #D9E8DC;
+      transition: color .15s, transform .15s;
+      line-height: 1;
+      padding: 0 2px;
+    }
+    .star-btn:hover,
+    .star-btn.active { color: #F9C74F; }
+    .star-btn:hover { transform: scale(1.15); }
+    .star-label {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 20px;
+      margin-top: 6px;
+      font-weight: 500;
+      transition: opacity .2s;
+    }
+
+    /* ===== Radio / Checkbox ===== */
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .opt-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: border-color .15s, background .15s;
+      user-select: none;
+    }
+    .opt-label:hover { border-color: var(--accent); background: var(--light); }
+    .opt-label input { display: none; }
+    .opt-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .15s, background .15s;
+    }
+    .opt-label.selected { border-color: var(--theme); background: var(--light); }
+    .opt-label.selected .opt-check {
+      background: var(--theme);
+      border-color: var(--theme);
+    }
+    .opt-label.selected .opt-check::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #fff;
+      border-radius: 50%;
+    }
+    /* checkbox variant */
+    .opt-label.checkbox .opt-check { border-radius: 5px; }
+    .opt-label.checkbox.selected .opt-check::after {
+      content: '✓';
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      border-radius: 0;
+      width: auto;
+      height: auto;
+      background: none;
+    }
+
+    /* ===== Textarea ===== */
+    .answer-textarea {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      resize: vertical;
+      min-height: 120px;
+      transition: border-color .15s;
+      outline: none;
+      background: var(--bg);
+      line-height: 1.7;
+    }
+    .answer-textarea:focus { border-color: var(--accent); background: #fff; }
+    .textarea-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* ===== Copy Button ===== */
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: 2px solid var(--accent);
+      color: var(--theme);
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background .15s, color .15s;
+      width: 100%;
+      justify-content: center;
+    }
+    .copy-btn:hover { background: var(--light); }
+    .copy-btn.copied {
+      background: var(--theme);
+      color: #fff;
+      border-color: var(--theme);
+    }
+    .copy-icon { font-size: 16px; }
+
+    /* ===== Submit Button ===== */
+    .submit-wrap { text-align: center; margin-top: 8px; }
+    .submit-btn {
+      background: var(--theme);
+      color: #fff;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 16px 40px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 6px 20px rgba(45,106,79,.35);
+      transition: transform .15s, box-shadow .15s, background .15s;
+    }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(45,106,79,.45);
+    }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled {
+      background: #B0C8B8;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .submit-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    /* ===== Thank You Screen ===== */
+    #thanks-screen {
+      display: none;
+      text-align: center;
+      padding: 40px 16px;
+      animation: fadeIn .6s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .thanks-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .thanks-title {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--theme);
+      margin-bottom: 10px;
+    }
+    .thanks-body {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 32px;
+    }
+
+    /* ===== Review Guide Card ===== */
+    .review-guide {
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .review-guide-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--theme);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .review-steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .review-steps li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .step-num {
+      background: var(--theme);
+      color: #fff;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ===== Review Button ===== */
+    .review-btn {
+      display: block;
+      background: #4285F4;
+      color: #fff;
+      font-family: 'Zen Kaku Gothic New', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 16px 24px;
+      border-radius: 50px;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(66,133,244,.35);
+      transition: transform .15s, box-shadow .15s;
+      margin-bottom: 16px;
+    }
+    .review-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(66,133,244,.45);
+    }
+
+    .skip-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+    .skip-link:hover { color: var(--theme); }
+
+    /* ===== Sending State ===== */
+    .sending-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sending-overlay.active { display: flex; }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border);
+      border-top-color: var(--theme);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== Error / Validation ===== */
+    .error-msg {
+      color: #D62828;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+    .card.has-error { border-color: #D62828; }
+
+    /* ===== Animation delay per card ===== */
+    .card:nth-child(1)  { animation-delay: .05s; }
+    .card:nth-child(2)  { animation-delay: .10s; }
+    .card:nth-child(3)  { animation-delay: .15s; }
+    .card:nth-child(4)  { animation-delay: .20s; }
+    .card:nth-child(5)  { animation-delay: .25s; }
+    .card:nth-child(6)  { animation-delay: .30s; }
+    .card:nth-child(7)  { animation-delay: .35s; }
+    .card:nth-child(8)  { animation-delay: .40s; }
+
+    /* ===== Mobile refinements ===== */
+    @media (max-width: 480px) {
+      .star-btn { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== Sending Overlay ===== -->
+<div class="sending-overlay" id="sending-overlay">
+  <div class="spinner"></div>
+  <p style="font-size:14px;color:var(--muted)">送信中…</p>
+</div>
+
+<!-- ===== Header ===== -->
+<header class="header">
+  <!-- ヘッダー画像（CONFIG.headerImageUrl がある場合に表示） -->
+  <div class="header-hero-wrap" id="header-hero-wrap">
+    <img id="header-hero-img" class="header-hero" src="" alt="" />
+  </div>
+  <div class="header-inner">
+    <div id="logo-area"></div>
+    <p class="header-sub">Customer Survey — 本日のご感想をお聞かせください</p>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Survey Form ===== -->
+<div class="container">
+  <form id="survey-form" novalidate>
+    <div id="questions-wrap"></div>
+
+    <div class="submit-wrap">
+      <button type="submit" class="submit-btn" id="submit-btn" disabled>
+        アンケートを送信する
+      </button>
+      <p class="submit-note">※ 回答後、高評価のお客様にはGoogle口コミ投稿のご案内が表示されます</p>
+    </div>
+  </form>
+
+  <!-- ===== Thank You Screen ===== -->
+  <div id="thanks-screen">
+    <span class="thanks-icon">🎉</span>
+    <h2 class="thanks-title" id="thanks-title"></h2>
+    <p class="thanks-body">
+      いただいたご意見はスタッフ全員で共有し、<br>
+      より良いサービスのために活かしてまいります。
+    </p>
+
+    <div class="review-guide" id="review-guide" style="display:none;">
+      <p class="review-guide-title">
+        <span>⭐</span> Google口コミへのご投稿もお願いできますか？
+      </p>
+      <ul class="review-steps">
+        <li>
+          <span class="step-num">1</span>
+          <span>下の「<strong>メッセージをコピーする</strong>」ボタンを押してください</span>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <span>「<strong>Google口コミを書く</strong>」ボタンを押してGoogleマップを開きます</span>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <span>口コミ入力欄を<strong>長押し → ペースト</strong>するだけで投稿できます！</span>
+        </li>
+      </ul>
+
+      <div id="copy-preview" style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;font-size:13px;color:var(--text);line-height:1.7;border:1px solid var(--border);display:none;"></div>
+
+      <button class="copy-btn" id="copy-btn" type="button">
+        <span class="copy-icon">📋</span>
+        <span id="copy-label">メッセージをコピーする</span>
+      </button>
+
+      <!-- コピー後に表示されるGoogle口コミボタン -->
+      <a href="#" class="review-btn" id="review-btn-inline" style="display:none;margin-top:14px;">
+        ⭐ Google口コミを書く
+      </a>
+    </div>
+
+    <a href="#" class="review-btn" id="review-btn">
+      ⭐ Google口コミを書く
+    </a>
+
+    <a href="#" class="skip-link" onclick="location.reload();return false;">
+      最初に戻る
+    </a>
+  </div>
+</div>
+
+<!-- ===== Main Script ===== -->
+<script>
+(function () {
+  // ---- テーマカラー適用 ----
+  if (CONFIG.themeColor) {
+    document.documentElement.style.setProperty('--theme', CONFIG.themeColor);
+  }
+  if (CONFIG.accentColor) {
+    document.documentElement.style.setProperty('--accent', CONFIG.accentColor);
+    // light variant (簡易計算: アクセントの薄色)
+    document.documentElement.style.setProperty('--light', CONFIG.accentColor + '22');
+  }
+
+  // ---- ロゴ/タイトル ----
+  const logoArea = document.getElementById('logo-area');
+  if (CONFIG.logoUrl) {
+    logoArea.innerHTML = `<img src="${CONFIG.logoUrl}" alt="${CONFIG.shopName}" class="logo-img" />`;
+  } else {
+    logoArea.innerHTML = `
+      <div class="logo-text">GENIUS TOKYO</div>
+      <div style="font-size:12px;letter-spacing:.18em;opacity:.78;">GINZA NIGHT CLUB</div>
+    `;
+  }
+  document.title = `お客様アンケート | ${CONFIG.shopName}`;
+
+  // ---- ヘッダー画像 ----
+  if (CONFIG.headerImageUrl) {
+    const heroWrap = document.getElementById('header-hero-wrap');
+    const heroImg  = document.getElementById('header-hero-img');
+    heroImg.src = CONFIG.headerImageUrl;
+    heroImg.alt = CONFIG.shopName;
+    heroWrap.style.display = 'block';
+  }
+
+  // ---- Thank You メッセージ ----
+  document.getElementById('thanks-title').textContent = CONFIG.thankYouMessage || 'ご回答ありがとうございました！';
+
+  // ---- 星ラベル ----
+  const starLabels = ['', 'とても不満', '不満', '普通', '満足', 'とても満足！'];
+
+  // ---- 設問レンダリング ----
+  const wrap = document.getElementById('questions-wrap');
+  const answers = {};
+
+  CONFIG.questions.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = `card-${q.id}`;
+
+    const reqBadge = q.required
+      ? `<span class="req">必須</span>`
+      : `<span class="opt">任意</span>`;
+
+    card.innerHTML = `
+      <div class="q-label">${idx + 1}. ${q.label}${reqBadge}</div>
+      <div class="q-body" id="body-${q.id}"></div>
+      <div class="error-msg" id="err-${q.id}">この項目を選択してください</div>
+    `;
+    wrap.appendChild(card);
+
+    const body = document.getElementById(`body-${q.id}`);
+
+    if (q.type === 'stars') {
+      renderStars(body, q);
+    } else if (q.type === 'radio' || q.type === 'checkbox') {
+      renderOptions(body, q);
+    } else if (q.type === 'textarea') {
+      renderTextarea(body, q);
+    }
+  });
+
+  // ---- 星評価 ----
+  function renderStars(container, q) {
+    const starsEl = document.createElement('div');
+    starsEl.className = 'stars';
+    const labelEl = document.createElement('div');
+    labelEl.className = 'star-label';
+
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'star-btn';
+      btn.textContent = '★';
+      btn.dataset.value = i;
+
+      btn.addEventListener('click', () => {
+        answers[q.id] = i;
+        updateStars(starsEl, i);
+        labelEl.textContent = starLabels[i];
+        clearError(q.id);
+        updateProgress();
+        checkSubmitEnabled();
+      });
+
+      btn.addEventListener('mouseenter', () => {
+        updateStars(starsEl, i);
+        labelEl.textContent = starLabels[i];
+      });
+
+      starsEl.addEventListener('mouseleave', () => {
+        const cur = answers[q.id] || 0;
+        updateStars(starsEl, cur);
+        labelEl.textContent = cur ? starLabels[cur] : '';
+      });
+
+      starsEl.appendChild(btn);
+    }
+    container.appendChild(starsEl);
+    container.appendChild(labelEl);
+  }
+
+  function updateStars(wrap, value) {
+    wrap.querySelectorAll('.star-btn').forEach((btn, idx) => {
+      btn.classList.toggle('active', idx < value);
+    });
+  }
+
+  // ---- 選択肢 ----
+  function renderOptions(container, q) {
+    const optWrap = document.createElement('div');
+    optWrap.className = 'options';
+
+    q.options.forEach((opt) => {
+      const label = document.createElement('label');
+      label.className = `opt-label${q.type === 'checkbox' ? ' checkbox' : ''}`;
+
+      const input = document.createElement('input');
+      input.type = q.type;
+      input.name = q.id;
+      input.value = opt;
+
+      const check = document.createElement('span');
+      check.className = 'opt-check';
+
+      const text = document.createElement('span');
+      text.textContent = opt;
+
+      label.appendChild(input);
+      label.appendChild(check);
+      label.appendChild(text);
+      optWrap.appendChild(label);
+
+      input.addEventListener('change', () => {
+        if (q.type === 'radio') {
+          optWrap.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected'));
+          label.classList.add('selected');
+          answers[q.id] = opt;
+        } else {
+          label.classList.toggle('selected', input.checked);
+          const checked = Array.from(optWrap.querySelectorAll('input:checked')).map(i => i.value);
+          answers[q.id] = checked;
+        }
+        clearError(q.id);
+        updateProgress();
+        checkSubmitEnabled();
+      });
+    });
+    container.appendChild(optWrap);
+  }
+
+  // ---- テキストエリア ----
+  function renderTextarea(container, q) {
+    const ta = document.createElement('textarea');
+    ta.className = 'answer-textarea';
+    ta.placeholder = q.placeholder || 'こちらにご記入ください';
+    ta.id = `ta-${q.id}`;
+
+    ta.addEventListener('input', () => {
+      answers[q.id] = ta.value;
+      updateProgress();
+      checkSubmitEnabled();
+    });
+
+    container.appendChild(ta);
+  }
+
+  // ---- 回答済み判定（数値0も有効値として扱う）----
+  function isAnswered(q) {
+    const a = answers[q.id];
+    if (a === undefined || a === null) return false;
+    if (typeof a === 'string' && a.trim() === '') return false;
+    if (Array.isArray(a) && a.length === 0) return false;
+    return true; // 数値(1〜5)・文字列・配列すべてOK
+  }
+
+  // ---- プログレスバー ----
+  function updateProgress() {
+    const required = CONFIG.questions.filter(q => q.required);
+    const answered = required.filter(isAnswered);
+    const pct = required.length ? (answered.length / required.length) * 100 : 100;
+    document.getElementById('progress-bar').style.width = pct + '%';
+  }
+
+  // ---- 送信ボタン有効判定 ----
+  function checkSubmitEnabled() {
+    const required = CONFIG.questions.filter(q => q.required);
+    const allOk = required.every(isAnswered);
+    document.getElementById('submit-btn').disabled = !allOk;
+  }
+
+  // ---- バリデーション ----
+  function validate() {
+    let ok = true;
+    CONFIG.questions.forEach(q => {
+      if (!q.required) return;
+      if (!isAnswered(q)) {
+        showError(q.id);
+        ok = false;
+      }
+    });
+    return ok;
+  }
+  function showError(id) {
+    document.getElementById(`card-${id}`).classList.add('has-error');
+    document.getElementById(`err-${id}`).style.display = 'block';
+  }
+  function clearError(id) {
+    document.getElementById(`card-${id}`).classList.remove('has-error');
+    document.getElementById(`err-${id}`).style.display = 'none';
+  }
+
+
+  // ---- GAS送信用ペイロード作成 ----
+  function buildPayload(action) {
+    const copyQ = CONFIG.questions.find(q => q.isCopyTarget);
+    const copyText = copyQ ? (answers[copyQ.id] || '').trim() : '';
+    return {
+      action,
+      shopName: CONFIG.shopName,
+      shopCategory: CONFIG.shopCategory,
+      pageUrl: location.href,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+      overallScore: answers.overall || '',
+      copyText,
+      answers: { ...answers },
+    };
+  }
+
+  // ---- GASへ送信 ----
+  async function sendToGAS(payload) {
+    if (!CONFIG.gasWebAppUrl) {
+      console.info('GAS URL未設定のため、スプレッドシート保存をスキップしました。');
+      return;
+    }
+
+    // Google Apps ScriptはCORS制約があるため、no-cors + text/plainで送信します。
+    // レスポンス内容はブラウザ側で読めませんが、スプレッドシートへの保存は実行されます。
+    await fetch(CONFIG.gasWebAppUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // ---- フォーム送信 ----
+  document.getElementById('survey-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate()) {
+      const firstErr = document.querySelector('.has-error');
+      if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // 送信オーバーレイ表示
+    document.getElementById('sending-overlay').classList.add('active');
+
+    const payload = buildPayload('survey_submit');
+
+    try {
+      await sendToGAS(payload);
+    } catch (err) {
+      // no-cors送信のため通常はここに来ませんが、通信不可の場合でもお客様体験を止めないためサンクス画面へ進めます。
+      console.warn('GAS送信エラー（画面遷移は継続します）:', err);
+    }
+
+    showThanks();
+  });
+
+  // ---- サンクス画面 ----
+  function showThanks() {
+    document.getElementById('sending-overlay').classList.remove('active');
+    document.getElementById('survey-form').style.display = 'none';
+    const thanksEl = document.getElementById('thanks-screen');
+    thanksEl.style.display = 'block';
+    const overallScore = answers['overall'] || 0;
+    if (overallScore <= 3) {
+    document.getElementById('review-guide').style.display = 'none';
+    document.getElementById('review-btn').style.display = 'none';
+    thanksEl.scrollIntoView({ behavior: 'smooth' });
+    return;
+    }
+
+    // Google口コミURL解決
+    let reviewUrl = CONFIG.googleReviewUrl;
+    if (!reviewUrl && CONFIG.googlePlaceId && !CONFIG.googlePlaceId.includes('xxx')) {
+      reviewUrl = `https://search.google.com/local/writereview?placeid=${CONFIG.googlePlaceId}`;
+    }
+
+    // メイン口コミボタン（メッセージなし時用）
+    const reviewBtnMain = document.getElementById('review-btn');
+    if (reviewUrl) {
+      reviewBtnMain.href   = reviewUrl;
+      reviewBtnMain.target = '_blank';
+      reviewBtnMain.rel    = 'noopener';
+    } else {
+      reviewBtnMain.style.display = 'none';
+    }
+
+    // コピー対象テキストを探す
+    const copyQ    = CONFIG.questions.find(q => q.isCopyTarget);
+    const copyText = copyQ ? (answers[copyQ.id] || '').trim() : '';
+
+    if (copyText) {
+      // コピー＋ガイドエリアを表示、メイン口コミボタンは隠す
+      document.getElementById('review-guide').style.display = 'block';
+      reviewBtnMain.style.display = 'none';
+
+      const preview = document.getElementById('copy-preview');
+      preview.style.display = 'block';
+      preview.textContent = copyText;
+
+      // インラインGoogle口コミボタンの設定
+      const reviewBtnInline = document.getElementById('review-btn-inline');
+      if (reviewUrl) {
+        reviewBtnInline.href   = reviewUrl;
+        reviewBtnInline.target = '_blank';
+        reviewBtnInline.rel    = 'noopener';
+      }
+
+      const copyBtn   = document.getElementById('copy-btn');
+      const copyLabel = document.getElementById('copy-label');
+      let copied = false;
+
+      copyBtn.addEventListener('click', async () => {
+        if (copied) return;
+        try {
+          await navigator.clipboard.writeText(copyText);
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = copyText;
+          ta.style.cssText = 'position:fixed;opacity:0;';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        copied = true;
+        copyBtn.classList.add('copied');
+        copyLabel.textContent = '✓ コピーしました！';
+
+        // コピークリックもスプレッドシートに記録します
+        sendToGAS(buildPayload('copy_click')).catch(err => console.warn('コピークリック送信エラー:', err));
+
+        // コピー完了後にGoogle口コミボタンをアニメーションで表示
+        if (reviewUrl) {
+          reviewBtnInline.style.display  = 'flex';
+          reviewBtnInline.style.opacity  = '0';
+          reviewBtnInline.style.transform = 'translateY(8px)';
+          reviewBtnInline.style.transition = 'opacity .4s ease, transform .4s ease';
+          requestAnimationFrame(() => {
+            reviewBtnInline.style.opacity  = '1';
+            reviewBtnInline.style.transform = 'translateY(0)';
+          });
+        }
+      });
+    }
+
+    thanksEl.scrollIntoView({ behavior: 'smooth' });
+  }
+})();
+</script>
+</body>
+</html>
