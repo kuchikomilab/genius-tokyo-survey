@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,7 +6,7 @@
   <title>GENIUS TOKYO お客様アンケート</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+JP:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet" />
   <script>
   // ====================================================
   //  CONFIG — 店舗ごとにここだけ書き換えてください
@@ -17,18 +16,18 @@
     shopCategory:   "ナイトクラブ・イベントスペース",
     logoUrl:        "",
     headerImageUrl: "",
-    themeColor:     "#111827",
+    themeColor:     "#0A0A0B",
     accentColor:    "#C9A646",
     // Googleビジネスプロフィールの「口コミ投稿URL」または Place ID を設定してください
     // 例）googleReviewUrl: "https://g.page/r/xxxxxxxx/review"
-    googlePlaceId:  "",
+    googlePlaceId:  "ChIJg69aQe-LGGAROkeDEH_oeao",
     googleReviewUrl:"",
     // GAS連携用：Google Apps ScriptをウェブアプリとしてデプロイしたURLを入れてください
     // 例）gasWebAppUrl: "https://script.google.com/macros/s/xxxxxxxx/exec"
     gasWebAppUrl:"",
     // GitHub Pages + GAS版です。
     // 回答データはGAS経由でGoogleスプレッドシートに保存します。
-    thankYouMessage:"ご回答ありがとうございました！",
+    thankYouMessage:"ご回答ありがとうございました",
     copyButtonText: "口コミ用メッセージをコピーする",
     questions: [
       { id:"overall",  type:"stars",    label:"本日のGENIUS TOKYOでのご体験は、総合的にいかがでしたか？", required:true },
@@ -42,53 +41,31 @@
         options:["友人・知人との来店","イベント参加","貸切・パーティー利用","VIP利用","初めての来店","その他"] },
       { id:"source",   type:"radio",    label:"GENIUS TOKYOをどこでお知りになりましたか？", required:false,
         options:["Google検索 / Googleマップ","Instagram / SNS","知人・友人の紹介","イベント情報サイト","通りがかり","以前から知っていた","その他"] },
-      { id:"message",  type:"textarea", label:"よろしければ、本日のご感想をお聞かせください 💬",
+      { id:"message",  type:"textarea", label:"よろしければ、本日のご感想をお聞かせください",
         placeholder:"例）音楽と照明の雰囲気がとても良く、友人とも楽しい時間を過ごせました。また来たいです！",
         required:false, isCopyTarget:true },
     ],
   };
   </script>
   <style>
-    /* ===== CSS Variables ===== */
+    /* ===== Design tokens ===== */
     :root {
-      --theme:   #2D6A4F;
-      --accent:  #52B788;
-      --light:   #D8F3DC;
-      --bg:      #F8FAF8;
-      --surface: #FFFFFF;
-      --text:    #1B2E22;
-      --muted:   #6B8F76;
-      --border:  #C8E0CF;
-      --radius:  16px;
-      --shadow:  0 4px 24px rgba(45,106,79,.10);
+      --theme:    #0A0A0B;
+      --surface2: #15140F;
+      --accent:   #C9A646;
+      --accent-soft: rgba(201,166,70,.16);
+      --light:    rgba(201,166,70,.10);
+      --bg:       #0A0A0B;
+      --surface:  #141311;
+      --text:     #EDE9E2;
+      --muted:    #948C78;
+      --border:   rgba(201,166,70,.28);
+      --border-soft: rgba(201,166,70,.14);
+      --radius:   2px;
+      --shadow:   0 12px 40px rgba(0,0,0,.55);
+      --err:      #C9544A;
     }
 
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 15% 0%, rgba(201,166,70,.18), transparent 34%),
-        radial-gradient(circle at 85% 10%, rgba(255,255,255,.08), transparent 30%);
-      z-index: -1;
-    }
-    .header {
-      background:
-        linear-gradient(135deg, #050505 0%, #111827 48%, #2B2112 100%);
-    }
-    .card {
-      border-color: rgba(201,166,70,.34);
-    }
-    .q-label .req {
-      background: linear-gradient(135deg, #111827, #3B2F16);
-    }
-    .submit-btn {
-      background: linear-gradient(135deg, #111827, #3B2F16);
-    }
-
-    /* ===== Reset ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -97,100 +74,119 @@
       color: var(--text);
       min-height: 100vh;
       padding-bottom: 60px;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 600px 400px at 50% -5%, rgba(201,166,70,.10), transparent 60%),
+        radial-gradient(ellipse 500px 500px at 100% 100%, rgba(201,166,70,.05), transparent 60%);
+      z-index: -1;
     }
 
     /* ===== Header ===== */
     .header {
-      background: var(--theme);
-      color: #fff;
+      background: linear-gradient(180deg, #0A0A0B 0%, #0E0D0A 100%);
+      color: var(--text);
       text-align: center;
       position: relative;
       overflow: hidden;
+      border-bottom: 1px solid var(--border-soft);
     }
-    .header::before {
+    .header::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse at 20% 50%, rgba(82,183,136,.35) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 50%, rgba(82,183,136,.20) 0%, transparent 60%);
-    }
-    /* ヘッダー画像エリア */
-    .header-hero {
-      width: 100%;
-      max-height: 200px;
-      object-fit: cover;
-      display: block;
-      position: relative;
-      z-index: 0;
+      left: 50%;
+      bottom: -1px;
+      width: 120px;
+      height: 1px;
+      transform: translateX(-50%);
+      background: var(--accent);
     }
     .header-hero-wrap {
       position: relative;
       overflow: hidden;
       max-height: 200px;
-      display: none; /* 画像URLがある場合のみ表示 */
+      display: none;
+    }
+    .header-hero {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(.2) contrast(1.05);
     }
     .header-hero-wrap::after {
       content: '';
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      height: 60px;
+      height: 70px;
       background: linear-gradient(transparent, var(--theme));
     }
     .header-inner {
       position: relative;
       z-index: 1;
-      padding: 24px 24px 20px;
+      padding: 40px 24px 28px;
+    }
+    .crest-line {
+      width: 40px;
+      height: 1px;
+      background: var(--accent);
+      margin: 0 auto 14px;
+      opacity: .7;
     }
     .logo-text {
-      font-family: 'Noto Serif JP', serif;
-      font-size: clamp(22px, 5vw, 30px);
-      font-weight: 700;
-      letter-spacing: .04em;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(26px, 6vw, 36px);
+      font-weight: 600;
+      letter-spacing: .14em;
       margin-bottom: 6px;
+      color: var(--text);
+    }
+    .logo-sub {
+      font-size: 10px;
+      letter-spacing: .32em;
+      color: var(--accent);
+      font-weight: 500;
     }
     .logo-img {
       max-height: 64px;
       max-width: 200px;
       margin-bottom: 10px;
-      border-radius: 10px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.25);
       object-fit: contain;
     }
-    .svg-logo {
-      width: 220px;
-      height: 60px;
-      display: block;
-      margin: 0 auto 8px;
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,.20));
-    }
     .header-sub {
-      font-size: 13px;
-      opacity: .85;
-      letter-spacing: .05em;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 12.5px;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-top: 16px;
     }
 
-    /* ===== Progress Bar ===== */
+    /* ===== Progress ===== */
     .progress-wrap {
-      background: rgba(255,255,255,.2);
-      height: 4px;
-      border-radius: 2px;
-      margin-top: 16px;
+      background: rgba(201,166,70,.14);
+      height: 2px;
+      margin-top: 22px;
       overflow: hidden;
     }
     .progress-bar {
       height: 100%;
-      background: #fff;
-      border-radius: 2px;
+      background: var(--accent);
       transition: width .4s ease;
       width: 0%;
+      box-shadow: 0 0 8px rgba(201,166,70,.7);
     }
 
     /* ===== Container ===== */
     .container {
       max-width: 600px;
       margin: 0 auto;
-      padding: 24px 16px;
+      padding: 32px 16px;
     }
 
     /* ===== Question Card ===== */
@@ -198,76 +194,86 @@
       background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 24px 20px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border);
+      padding: 28px 22px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border-soft);
+      position: relative;
       opacity: 0;
-      transform: translateY(18px);
-      animation: slideUp .45s ease forwards;
+      transform: translateY(14px);
+      animation: slideUp .5s ease forwards;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent 70%);
+      opacity: .55;
     }
     @keyframes slideUp {
       to { opacity: 1; transform: translateY(0); }
     }
 
+    .q-index {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      letter-spacing: .18em;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 8px;
+    }
     .q-label {
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.6;
-      margin-bottom: 16px;
+      font-size: 14.5px;
+      font-weight: 500;
+      line-height: 1.7;
+      margin-bottom: 18px;
       color: var(--text);
     }
-    .q-label .req {
-      display: inline-block;
-      background: var(--theme);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 6px;
-      vertical-align: middle;
-      letter-spacing: .04em;
-    }
+    .q-label .req,
     .q-label .opt {
       display: inline-block;
-      background: var(--border);
-      color: var(--muted);
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 6px;
+      letter-spacing: .08em;
+      padding: 2px 7px;
+      margin-left: 8px;
       vertical-align: middle;
+      border: 1px solid var(--border);
     }
+    .q-label .req { color: var(--accent); background: var(--accent-soft); }
+    .q-label .opt { color: var(--muted); background: transparent; }
 
     /* ===== Stars ===== */
     .stars {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       justify-content: center;
-      padding: 8px 0;
+      padding: 10px 0;
     }
     .star-btn {
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 40px;
-      color: #D9E8DC;
-      transition: color .15s, transform .15s;
+      font-size: 36px;
+      color: rgba(201,166,70,.22);
+      transition: color .15s, transform .15s, text-shadow .15s;
       line-height: 1;
       padding: 0 2px;
     }
     .star-btn:hover,
-    .star-btn.active { color: #F9C74F; }
-    .star-btn:hover { transform: scale(1.15); }
+    .star-btn.active {
+      color: var(--accent);
+      text-shadow: 0 0 14px rgba(201,166,70,.85);
+    }
+    .star-btn:hover { transform: scale(1.1); }
     .star-label {
       text-align: center;
-      font-size: 13px;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 12px;
       color: var(--muted);
-      min-height: 20px;
-      margin-top: 6px;
-      font-weight: 500;
-      transition: opacity .2s;
+      min-height: 18px;
+      margin-top: 8px;
+      letter-spacing: .04em;
     }
 
     /* ===== Radio / Checkbox ===== */
@@ -275,48 +281,47 @@
     .opt-label {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 13px 16px;
-      border-radius: 10px;
-      border: 2px solid var(--border);
+      gap: 14px;
+      padding: 14px 16px;
+      border: 1px solid var(--border-soft);
       cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 13.5px;
+      font-weight: 400;
       transition: border-color .15s, background .15s;
       user-select: none;
+      color: var(--text);
     }
     .opt-label:hover { border-color: var(--accent); background: var(--light); }
     .opt-label input { display: none; }
     .opt-check {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      border: 2px solid var(--border);
+      border: 1px solid var(--border);
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: border-color .15s, background .15s;
     }
-    .opt-label.selected { border-color: var(--theme); background: var(--light); }
+    .opt-label.selected { border-color: var(--accent); background: var(--light); }
     .opt-label.selected .opt-check {
-      background: var(--theme);
-      border-color: var(--theme);
+      background: var(--accent);
+      border-color: var(--accent);
     }
     .opt-label.selected .opt-check::after {
       content: '';
-      width: 8px;
-      height: 8px;
-      background: #fff;
+      width: 6px;
+      height: 6px;
+      background: var(--theme);
       border-radius: 50%;
     }
-    /* checkbox variant */
-    .opt-label.checkbox .opt-check { border-radius: 5px; }
+    .opt-label.checkbox .opt-check { border-radius: 2px; }
     .opt-label.checkbox.selected .opt-check::after {
       content: '✓';
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
-      color: #fff;
+      color: var(--theme);
       border-radius: 0;
       width: auto;
       height: auto;
@@ -326,22 +331,23 @@
     /* ===== Textarea ===== */
     .answer-textarea {
       width: 100%;
-      border: 2px solid var(--border);
-      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      border-radius: 2px;
       padding: 14px 16px;
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--text);
       resize: vertical;
       min-height: 120px;
       transition: border-color .15s;
       outline: none;
-      background: var(--bg);
-      line-height: 1.7;
+      background: #0E0D0A;
+      line-height: 1.8;
     }
-    .answer-textarea:focus { border-color: var(--accent); background: #fff; }
+    .answer-textarea::placeholder { color: var(--muted); opacity: .6; }
+    .answer-textarea:focus { border-color: var(--accent); }
     .textarea-hint {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--muted);
       margin-top: 8px;
       line-height: 1.5;
@@ -353,129 +359,144 @@
       align-items: center;
       gap: 8px;
       background: none;
-      border: 2px solid var(--accent);
-      color: var(--theme);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
-      padding: 10px 16px;
-      border-radius: 8px;
+      letter-spacing: .04em;
+      padding: 13px 16px;
       cursor: pointer;
-      margin-top: 12px;
+      margin-top: 14px;
       transition: background .15s, color .15s;
       width: 100%;
       justify-content: center;
     }
     .copy-btn:hover { background: var(--light); }
     .copy-btn.copied {
-      background: var(--theme);
-      color: #fff;
-      border-color: var(--theme);
+      background: var(--accent);
+      color: var(--theme);
+      border-color: var(--accent);
     }
-    .copy-icon { font-size: 16px; }
+    .copy-icon svg { width: 14px; height: 14px; display: block; }
 
     /* ===== Submit Button ===== */
-    .submit-wrap { text-align: center; margin-top: 8px; }
+    .submit-wrap { text-align: center; margin-top: 10px; }
     .submit-btn {
-      background: var(--theme);
-      color: #fff;
+      background: var(--accent);
+      color: var(--theme);
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: .05em;
-      padding: 16px 40px;
+      letter-spacing: .12em;
+      padding: 17px 40px;
       border: none;
-      border-radius: 50px;
+      border-radius: 1px;
       cursor: pointer;
       width: 100%;
       max-width: 360px;
-      box-shadow: 0 6px 20px rgba(45,106,79,.35);
-      transition: transform .15s, box-shadow .15s, background .15s;
+      transition: transform .15s, box-shadow .15s, opacity .15s;
+      box-shadow: 0 8px 24px rgba(201,166,70,.25);
     }
-    .submit-btn:hover {
+    .submit-btn:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(45,106,79,.45);
+      box-shadow: 0 12px 30px rgba(201,166,70,.4);
     }
     .submit-btn:active { transform: translateY(0); }
     .submit-btn:disabled {
-      background: #B0C8B8;
+      background: #2A2820;
+      color: var(--muted);
       box-shadow: none;
       cursor: not-allowed;
       transform: none;
     }
     .submit-note {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
-      margin-top: 10px;
+      margin-top: 12px;
+      letter-spacing: .02em;
     }
 
     /* ===== Thank You Screen ===== */
     #thanks-screen {
       display: none;
       text-align: center;
-      padding: 40px 16px;
-      animation: fadeIn .6s ease;
+      padding: 50px 16px 20px;
+      animation: fadeIn .7s ease;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .thanks-icon {
-      font-size: 64px;
-      margin-bottom: 16px;
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 20px;
       display: block;
+      color: var(--accent);
     }
     .thanks-title {
-      font-family: 'Noto Serif JP', serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--theme);
-      margin-bottom: 10px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      color: var(--text);
+      margin-bottom: 12px;
     }
     .thanks-body {
-      font-size: 14px;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 12.5px;
       color: var(--muted);
-      line-height: 1.8;
-      margin-bottom: 32px;
+      line-height: 2;
+      margin-bottom: 36px;
+      letter-spacing: .02em;
     }
 
     /* ===== Review Guide Card ===== */
     .review-guide {
       background: var(--surface);
-      border: 2px solid var(--accent);
-      border-radius: var(--radius);
-      padding: 24px 20px;
-      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 28px 22px;
+      margin-bottom: 22px;
       text-align: left;
+      position: relative;
+    }
+    .review-guide::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent 70%);
     }
     .review-guide-title {
+      font-family: 'Noto Serif JP', serif;
       font-weight: 700;
-      font-size: 15px;
-      color: var(--theme);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: .02em;
     }
+    .review-guide-title .accent-mark { color: var(--accent); margin-right: 6px; }
     .review-steps {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .review-steps li {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      font-size: 13px;
-      line-height: 1.6;
+      gap: 12px;
+      font-size: 12.5px;
+      line-height: 1.7;
       color: var(--text);
     }
     .step-num {
-      background: var(--theme);
-      color: #fff;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: 700;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      width: 20px;
+      height: 20px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -486,66 +507,72 @@
     /* ===== Review Button ===== */
     .review-btn {
       display: block;
-      background: #4285F4;
-      color: #fff;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--accent);
       font-family: 'Zen Kaku Gothic New', sans-serif;
-      font-size: 15px;
+      font-size: 13.5px;
       font-weight: 700;
+      letter-spacing: .08em;
       padding: 16px 24px;
-      border-radius: 50px;
+      border-radius: 1px;
       text-decoration: none;
       text-align: center;
-      box-shadow: 0 6px 20px rgba(66,133,244,.35);
-      transition: transform .15s, box-shadow .15s;
+      transition: background .15s, color .15s;
       margin-bottom: 16px;
     }
-    .review-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(66,133,244,.45);
-    }
+    .review-btn:hover { background: var(--accent); color: var(--theme); }
 
     .skip-link {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--muted);
       text-decoration: none;
       display: block;
       text-align: center;
+      letter-spacing: .04em;
     }
-    .skip-link:hover { color: var(--theme); }
+    .skip-link:hover { color: var(--accent); }
 
     /* ===== Sending State ===== */
     .sending-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(255,255,255,.85);
+      background: rgba(10,10,11,.92);
       z-index: 100;
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
     }
     .sending-overlay.active { display: flex; }
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid var(--border);
-      border-top-color: var(--theme);
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin .8s linear infinite;
+      animation: spin .9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .sending-overlay p {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .1em;
+    }
 
     /* ===== Error / Validation ===== */
     .error-msg {
-      color: #D62828;
-      font-size: 12px;
+      color: var(--err);
+      font-size: 11.5px;
       margin-top: 8px;
       display: none;
+      letter-spacing: .02em;
     }
-    .card.has-error { border-color: #D62828; }
+    .card.has-error { border-color: var(--err); }
+    .card.has-error::before { background: var(--err); }
 
-    /* ===== Animation delay per card ===== */
     .card:nth-child(1)  { animation-delay: .05s; }
     .card:nth-child(2)  { animation-delay: .10s; }
     .card:nth-child(3)  { animation-delay: .15s; }
@@ -555,9 +582,13 @@
     .card:nth-child(7)  { animation-delay: .35s; }
     .card:nth-child(8)  { animation-delay: .40s; }
 
-    /* ===== Mobile refinements ===== */
     @media (max-width: 480px) {
-      .star-btn { font-size: 34px; }
+      .star-btn { font-size: 30px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { animation: none; opacity: 1; transform: none; }
+      .submit-btn:hover { transform: none; }
     }
   </style>
 </head>
@@ -566,18 +597,18 @@
 <!-- ===== Sending Overlay ===== -->
 <div class="sending-overlay" id="sending-overlay">
   <div class="spinner"></div>
-  <p style="font-size:14px;color:var(--muted)">送信中…</p>
+  <p>送信中</p>
 </div>
 
 <!-- ===== Header ===== -->
 <header class="header">
-  <!-- ヘッダー画像（CONFIG.headerImageUrl がある場合に表示） -->
   <div class="header-hero-wrap" id="header-hero-wrap">
     <img id="header-hero-img" class="header-hero" src="" alt="" />
   </div>
   <div class="header-inner">
+    <div class="crest-line"></div>
     <div id="logo-area"></div>
-    <p class="header-sub">Customer Survey — 本日のご感想をお聞かせください</p>
+    <p class="header-sub">本日のご感想をお聞かせください</p>
     <div class="progress-wrap">
       <div class="progress-bar" id="progress-bar"></div>
     </div>
@@ -591,15 +622,18 @@
 
     <div class="submit-wrap">
       <button type="submit" class="submit-btn" id="submit-btn" disabled>
-        アンケートを送信する
+        送信する
       </button>
-      <p class="submit-note">※ 回答後、高評価のお客様にはGoogle口コミ投稿のご案内が表示されます</p>
+      <p class="submit-note">回答後、高評価のお客様にはGoogle口コミ投稿のご案内が表示されます</p>
     </div>
   </form>
 
   <!-- ===== Thank You Screen ===== -->
   <div id="thanks-screen">
-    <span class="thanks-icon">🎉</span>
+    <svg class="thanks-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1"/>
+      <path d="M15 24.5L21 30.5L33 17.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
     <h2 class="thanks-title" id="thanks-title"></h2>
     <p class="thanks-body">
       いただいたご意見はスタッフ全員で共有し、<br>
@@ -608,7 +642,7 @@
 
     <div class="review-guide" id="review-guide" style="display:none;">
       <p class="review-guide-title">
-        <span>⭐</span> Google口コミへのご投稿もお願いできますか？
+        <span class="accent-mark">—</span>Google口コミへのご投稿もお願いできますか？
       </p>
       <ul class="review-steps">
         <li>
@@ -621,25 +655,26 @@
         </li>
         <li>
           <span class="step-num">3</span>
-          <span>口コミ入力欄を<strong>長押し → ペースト</strong>するだけで投稿できます！</span>
+          <span>口コミ入力欄を<strong>長押し → ペースト</strong>するだけで投稿できます</span>
         </li>
       </ul>
 
-      <div id="copy-preview" style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px;font-size:13px;color:var(--text);line-height:1.7;border:1px solid var(--border);display:none;"></div>
+      <div id="copy-preview" style="margin-top:18px;padding:14px;background:#0E0D0A;border:1px solid var(--border-soft);font-size:12.5px;color:var(--text);line-height:1.8;display:none;"></div>
 
       <button class="copy-btn" id="copy-btn" type="button">
-        <span class="copy-icon">📋</span>
+        <span class="copy-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="8" width="13" height="13" rx="1"/><path d="M16 8V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h3"/></svg>
+        </span>
         <span id="copy-label">メッセージをコピーする</span>
       </button>
 
-      <!-- コピー後に表示されるGoogle口コミボタン -->
-      <a href="#" class="review-btn" id="review-btn-inline" style="display:none;margin-top:14px;">
-        ⭐ Google口コミを書く
+      <a href="#" class="review-btn" id="review-btn-inline" style="display:none;margin-top:16px;">
+        Google口コミを書く
       </a>
     </div>
 
     <a href="#" class="review-btn" id="review-btn">
-      ⭐ Google口コミを書く
+      Google口コミを書く
     </a>
 
     <a href="#" class="skip-link" onclick="location.reload();return false;">
@@ -651,29 +686,24 @@
 <!-- ===== Main Script ===== -->
 <script>
 (function () {
-  // ---- テーマカラー適用 ----
   if (CONFIG.themeColor) {
     document.documentElement.style.setProperty('--theme', CONFIG.themeColor);
   }
   if (CONFIG.accentColor) {
     document.documentElement.style.setProperty('--accent', CONFIG.accentColor);
-    // light variant (簡易計算: アクセントの薄色)
-    document.documentElement.style.setProperty('--light', CONFIG.accentColor + '22');
   }
 
-  // ---- ロゴ/タイトル ----
   const logoArea = document.getElementById('logo-area');
   if (CONFIG.logoUrl) {
     logoArea.innerHTML = `<img src="${CONFIG.logoUrl}" alt="${CONFIG.shopName}" class="logo-img" />`;
   } else {
     logoArea.innerHTML = `
       <div class="logo-text">GENIUS TOKYO</div>
-      <div style="font-size:12px;letter-spacing:.18em;opacity:.78;">GINZA NIGHT CLUB</div>
+      <div class="logo-sub">GINZA &nbsp;NIGHT&nbsp; CLUB</div>
     `;
   }
   document.title = `お客様アンケート | ${CONFIG.shopName}`;
 
-  // ---- ヘッダー画像 ----
   if (CONFIG.headerImageUrl) {
     const heroWrap = document.getElementById('header-hero-wrap');
     const heroImg  = document.getElementById('header-hero-img');
@@ -682,13 +712,10 @@
     heroWrap.style.display = 'block';
   }
 
-  // ---- Thank You メッセージ ----
-  document.getElementById('thanks-title').textContent = CONFIG.thankYouMessage || 'ご回答ありがとうございました！';
+  document.getElementById('thanks-title').textContent = CONFIG.thankYouMessage || 'ご回答ありがとうございました';
 
-  // ---- 星ラベル ----
-  const starLabels = ['', 'とても不満', '不満', '普通', '満足', 'とても満足！'];
+  const starLabels = ['', 'とても不満', '不満', '普通', '満足', 'とても満足'];
 
-  // ---- 設問レンダリング ----
   const wrap = document.getElementById('questions-wrap');
   const answers = {};
 
@@ -701,8 +728,11 @@
       ? `<span class="req">必須</span>`
       : `<span class="opt">任意</span>`;
 
+    const num = String(idx + 1).padStart(2, '0');
+
     card.innerHTML = `
-      <div class="q-label">${idx + 1}. ${q.label}${reqBadge}</div>
+      <span class="q-index">${num}</span>
+      <div class="q-label">${q.label}${reqBadge}</div>
       <div class="q-body" id="body-${q.id}"></div>
       <div class="error-msg" id="err-${q.id}">この項目を選択してください</div>
     `;
@@ -719,7 +749,6 @@
     }
   });
 
-  // ---- 星評価 ----
   function renderStars(container, q) {
     const starsEl = document.createElement('div');
     starsEl.className = 'stars';
@@ -765,7 +794,6 @@
     });
   }
 
-  // ---- 選択肢 ----
   function renderOptions(container, q) {
     const optWrap = document.createElement('div');
     optWrap.className = 'options';
@@ -808,7 +836,6 @@
     container.appendChild(optWrap);
   }
 
-  // ---- テキストエリア ----
   function renderTextarea(container, q) {
     const ta = document.createElement('textarea');
     ta.className = 'answer-textarea';
@@ -824,16 +851,14 @@
     container.appendChild(ta);
   }
 
-  // ---- 回答済み判定（数値0も有効値として扱う）----
   function isAnswered(q) {
     const a = answers[q.id];
     if (a === undefined || a === null) return false;
     if (typeof a === 'string' && a.trim() === '') return false;
     if (Array.isArray(a) && a.length === 0) return false;
-    return true; // 数値(1〜5)・文字列・配列すべてOK
+    return true;
   }
 
-  // ---- プログレスバー ----
   function updateProgress() {
     const required = CONFIG.questions.filter(q => q.required);
     const answered = required.filter(isAnswered);
@@ -841,14 +866,12 @@
     document.getElementById('progress-bar').style.width = pct + '%';
   }
 
-  // ---- 送信ボタン有効判定 ----
   function checkSubmitEnabled() {
     const required = CONFIG.questions.filter(q => q.required);
     const allOk = required.every(isAnswered);
     document.getElementById('submit-btn').disabled = !allOk;
   }
 
-  // ---- バリデーション ----
   function validate() {
     let ok = true;
     CONFIG.questions.forEach(q => {
@@ -869,8 +892,6 @@
     document.getElementById(`err-${id}`).style.display = 'none';
   }
 
-
-  // ---- GAS送信用ペイロード作成 ----
   function buildPayload(action) {
     const copyQ = CONFIG.questions.find(q => q.isCopyTarget);
     const copyText = copyQ ? (answers[copyQ.id] || '').trim() : '';
@@ -887,15 +908,11 @@
     };
   }
 
-  // ---- GASへ送信 ----
   async function sendToGAS(payload) {
     if (!CONFIG.gasWebAppUrl) {
       console.info('GAS URL未設定のため、スプレッドシート保存をスキップしました。');
       return;
     }
-
-    // Google Apps ScriptはCORS制約があるため、no-cors + text/plainで送信します。
-    // レスポンス内容はブラウザ側で読めませんが、スプレッドシートへの保存は実行されます。
     await fetch(CONFIG.gasWebAppUrl, {
       method: 'POST',
       mode: 'no-cors',
@@ -904,7 +921,6 @@
     });
   }
 
-  // ---- フォーム送信 ----
   document.getElementById('survey-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!validate()) {
@@ -913,22 +929,18 @@
       return;
     }
 
-    // 送信オーバーレイ表示
     document.getElementById('sending-overlay').classList.add('active');
-
     const payload = buildPayload('survey_submit');
 
     try {
       await sendToGAS(payload);
     } catch (err) {
-      // no-cors送信のため通常はここに来ませんが、通信不可の場合でもお客様体験を止めないためサンクス画面へ進めます。
       console.warn('GAS送信エラー（画面遷移は継続します）:', err);
     }
 
     showThanks();
   });
 
-  // ---- サンクス画面 ----
   function showThanks() {
     document.getElementById('sending-overlay').classList.remove('active');
     document.getElementById('survey-form').style.display = 'none';
@@ -936,19 +948,17 @@
     thanksEl.style.display = 'block';
     const overallScore = answers['overall'] || 0;
     if (overallScore <= 3) {
-    document.getElementById('review-guide').style.display = 'none';
-    document.getElementById('review-btn').style.display = 'none';
-    thanksEl.scrollIntoView({ behavior: 'smooth' });
-    return;
+      document.getElementById('review-guide').style.display = 'none';
+      document.getElementById('review-btn').style.display = 'none';
+      thanksEl.scrollIntoView({ behavior: 'smooth' });
+      return;
     }
 
-    // Google口コミURL解決
     let reviewUrl = CONFIG.googleReviewUrl;
     if (!reviewUrl && CONFIG.googlePlaceId && !CONFIG.googlePlaceId.includes('xxx')) {
       reviewUrl = `https://search.google.com/local/writereview?placeid=${CONFIG.googlePlaceId}`;
     }
 
-    // メイン口コミボタン（メッセージなし時用）
     const reviewBtnMain = document.getElementById('review-btn');
     if (reviewUrl) {
       reviewBtnMain.href   = reviewUrl;
@@ -958,12 +968,10 @@
       reviewBtnMain.style.display = 'none';
     }
 
-    // コピー対象テキストを探す
     const copyQ    = CONFIG.questions.find(q => q.isCopyTarget);
     const copyText = copyQ ? (answers[copyQ.id] || '').trim() : '';
 
     if (copyText) {
-      // コピー＋ガイドエリアを表示、メイン口コミボタンは隠す
       document.getElementById('review-guide').style.display = 'block';
       reviewBtnMain.style.display = 'none';
 
@@ -971,7 +979,6 @@
       preview.style.display = 'block';
       preview.textContent = copyText;
 
-      // インラインGoogle口コミボタンの設定
       const reviewBtnInline = document.getElementById('review-btn-inline');
       if (reviewUrl) {
         reviewBtnInline.href   = reviewUrl;
@@ -998,12 +1005,10 @@
         }
         copied = true;
         copyBtn.classList.add('copied');
-        copyLabel.textContent = '✓ コピーしました！';
+        copyLabel.textContent = 'コピーしました';
 
-        // コピークリックもスプレッドシートに記録します
         sendToGAS(buildPayload('copy_click')).catch(err => console.warn('コピークリック送信エラー:', err));
 
-        // コピー完了後にGoogle口コミボタンをアニメーションで表示
         if (reviewUrl) {
           reviewBtnInline.style.display  = 'flex';
           reviewBtnInline.style.opacity  = '0';
